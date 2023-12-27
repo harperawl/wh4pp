@@ -1,0 +1,260 @@
+<html>
+    <head>
+        <title>Word Hunt (for Poor People)</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <h1>Word Hunt (for Poor People)</h1>
+        <div id="settings">
+            <input id="time" type="number" value="90"> Length of time (sec)</input>
+            <br>
+            <button id="start" onclick=startGame()>Start</button>
+        </div>
+        <div id="game">
+            <div id="info">
+                <p>Time:&nbsp;<span id="timer"></span></p>
+                <p>Score:&nbsp;<span id="score"></span></p>
+            </div>
+            <div id="grid">
+                <div class="letter" data-position-x="0" data-position-y="0"></div>
+                <div class="letter" data-position-x="1" data-position-y="0"></div>
+                <div class="letter" data-position-x="2" data-position-y="0"></div>
+                <div class="letter" data-position-x="3" data-position-y="0"></div>
+                <div class="letter" data-position-x="0" data-position-y="1"></div>
+                <div class="letter" data-position-x="1" data-position-y="1"></div>
+                <div class="letter" data-position-x="2" data-position-y="1"></div>
+                <div class="letter" data-position-x="3" data-position-y="1"></div>
+                <div class="letter" data-position-x="0" data-position-y="2"></div>
+                <div class="letter" data-position-x="1" data-position-y="2"></div>
+                <div class="letter" data-position-x="2" data-position-y="2"></div>
+                <div class="letter" data-position-x="3" data-position-y="2"></div>
+                <div class="letter" data-position-x="0" data-position-y="3"></div>
+                <div class="letter" data-position-x="1" data-position-y="3"></div>
+                <div class="letter" data-position-x="2" data-position-y="3"></div>
+                <div class="letter" data-position-x="3" data-position-y="3"></div>
+            </div>
+            <div id="words"></div>
+            <div id="results">
+                <table>
+                    <tr>
+                        <th></th>
+                        <th><b>Player 1</b></th>
+                        <th><b>Player 2</b></th>
+                    </tr>
+                    <tr>
+                        <td><b>Score:</b></td>
+                        <td id="p1score"></td>
+                        <td id="p2score"></td>
+                    </tr>
+                    <tr>
+                        <td><b># of words:</b></td>
+                        <td id="p1wordcount"></td>
+                        <td id="p2wordcount"></td>
+                    </tr>
+                    <tr>
+                        <td><b>Words:</b></td>
+                        <td id="p1words"></td>
+                        <td id="p2words"></td>
+                    </tr>
+                </table>
+                Share link: <b id="sharelink"></b>
+            </div>
+        </div>
+        <script type="text/javascript" src="wordList.js"></script>
+        <script>
+            let time;
+            let gridSetup = [];
+            let timerChanging;
+            let params;
+            let score = 0;
+            let play = false;
+
+            window.onload = function() {
+                params = new URLSearchParams(window.location.search);
+                if (params.get("words") != null) {
+                    document.getElementById("time").value = params.get("time");
+                    document.getElementById("time").disabled = true;
+                }
+            }
+
+            function startGame() {
+                const letters = document.querySelectorAll("div.letter");
+                if (params.get("words") != null) {
+                    time = params.get("time");
+                    loadLetters();
+                } else {
+                    time = parseInt(document.getElementById("time").value);
+                    generateLetters();
+                }
+                document.getElementById("game").hidden = false;
+                updateTimer();
+                timerChanging = setInterval(updateTimer, 1000);
+                document.getElementById("score").innerHTML = score;
+                play = true;
+            }
+
+            function loadLetters() {
+                words.innerHTML = "";
+                lettersGiven = atob(params.get("letters")).split(",");
+                const letters = document.querySelectorAll("div.letter");
+                for (let i = 0; i < 16; i++) {
+                    letters[i].innerHTML = lettersGiven[i];
+                }
+            }
+
+            function generateLetters() {
+                words.innerHTML = "";
+                const consonants = [...'QWRTYPSDFGHLCBNM'];
+                const weirds = [...'JKZXV'];
+                const vowels = [...'AEIOU'];
+                const letters = document.querySelectorAll("div.letter");
+                for (let i = 0; i < 16; i++) {
+                    letters.item(i).innerHTML = "";
+                }
+                for (let i = 0; i < 6; i++) {
+                    letters.item(Math.floor(Math.random() * 16)).innerHTML = vowels[Math.floor(Math.random() * 5)];
+                }
+                for (let i = 0; i < 16; i++) {
+                    if (letters.item(i).innerHTML == "") {
+                        letters.item(i).innerHTML = consonants[Math.floor(Math.random() * consonants.length)];
+                    }
+                }
+                for (let i = 0; i < 16; i++) {
+                    gridSetup.push(letters.item(i).innerHTML);
+                }
+            }
+
+            function updateTimer() {
+                if (time > 0) {
+                    time -= 1;
+                    document.getElementById("timer").innerHTML = time;
+                } else {
+                    clearInterval(timerChanging);
+                    play = false;
+                    populateResults();
+                }
+            }
+
+            function populateResults() {
+                let p1score, p2score, p1wordcount, p2wordcount, p1words, p2words;
+
+                if (params.get("words")) {
+                    let p1wordsArray = atob(params.get("words")).split(",");
+                    p1score = calculateScore(p1wordsArray, true);
+                    p2score = score;
+                    p1wordcount = p1wordsArray.length;
+                    p2wordcount = listOfWords.length;
+                    p1words = p1wordsArray.join(", ");
+                    p2words = listOfWords.join(", ");
+                } else {
+                    p1score = score;
+                    p2score = "???";
+                    p1wordcount = listOfWords.length;
+                    p2wordcount = "???";
+                    p1words = listOfWords.join(", ");
+                    p2words = "???";
+                }
+
+                document.getElementById("sharelink").innerHTML = "http://example.com/?letters=" + btoa(gridSetup.toString()) + "&words=" + btoa(listOfWords.toString()) + "&time=" + document.getElementById("time").value;
+                document.getElementById("p1score").innerHTML = p1score;
+                document.getElementById("p2score").innerHTML = p2score;
+                document.getElementById("p1wordcount").innerHTML = p1wordcount;
+                document.getElementById("p2wordcount").innerHTML = p2wordcount;
+                document.getElementById("p1words").innerHTML = p1words;
+                document.getElementById("p2words").innerHTML = p2words;
+            }
+
+            let isMouseDown = false;
+            let listOfLetters = [];
+            let listOfBoxes = [];
+            let listOfWords = [];
+            let lastSelectedCell = null;
+
+            document.addEventListener('mousedown', handleMouseDown);
+            document.addEventListener('mouseup', handleMouseUp);
+            document.querySelectorAll('.letter').forEach(cell => {
+                cell.addEventListener('mouseenter', handleMouseEnter);
+            });
+
+            function handleMouseUp() {
+                isMouseDown = false;
+                listOfBoxes.forEach(cell => {
+                    cell.classList.remove('selected');
+                });
+                if (listOfLetters.length > 2) {
+                    word = listOfLetters.join("");
+                    if (wordList.hasOwnProperty(word.toLowerCase()) && !listOfWords.includes(word)) {
+                        wordScore = calculateScore(word, false)
+                        score += wordScore;
+                        document.getElementById("score").innerHTML = score;
+                        listOfWords.push(word);
+                        document.getElementById("words").innerHTML += "<br>" + word + "&nbsp;" + wordScore;
+                    }
+                }
+                listOfBoxes = [];
+                listOfLetters = [];
+            }
+
+            function handleMouseDown(event) {
+                isMouseDown = true;
+                lastSelectedCell = event.target;
+                handleMouseEnter(event);
+            }
+
+            function handleMouseEnter(event) {
+                if (isMouseDown && event.target.classList == "letter" && !listOfBoxes.includes(event.target) && isAdjacentOrDiagonal(lastSelectedCell, event.target) && play) {
+                    event.target.classList.add('selected');
+                    listOfBoxes.push(event.target);
+                    listOfLetters.push(event.target.innerHTML);
+                    lastSelectedCell = event.target;
+                }
+            }
+
+            function isAdjacentOrDiagonal(cell1, cell2) {
+                return Math.abs(cell1.getAttribute("data-position-x") - cell2.getAttribute("data-position-x")) <= 1 && Math.abs(cell1.getAttribute("data-position-y") - cell2.getAttribute("data-position-y")) <= 1;
+            }
+
+            function calculateScore(word, list) {
+                if (list) {
+                    let listScore = 0;
+                    for (let i = 0; i < word.length; i++) {
+                        wordLength = word[i].length;
+                        if (wordLength == 3) {
+                            listScore += 100;
+                        } else if (wordLength == 4) {
+                            listScore += 400;
+                        } else if (wordLength == 5) {
+                            listScore += 800;
+                        } else if (wordLength == 6) {
+                            listScore += 1400;
+                        } else if (wordLength == 7) {
+                            listScore += 1800;
+                        } else if (wordLength >= 8) {
+                            listScore += 2200;
+                        } else {
+                            listScore += 0;
+                        }
+                    }
+                    return listScore;
+                } else {
+                    wordLength = word.length;
+                    if (wordLength == 3) {
+                            return 100;
+                        } else if (wordLength == 4) {
+                            return 400;
+                        } else if (wordLength == 5) {
+                            return 800;
+                        } else if (wordLength == 6) {
+                            return 1400;
+                        } else if (wordLength == 7) {
+                            return 1800;
+                        } else if (wordLength >= 8) {
+                            return 2200;
+                        } else {
+                            return 0;
+                        }
+                }
+            }
+        </script>
+    </body>
+</html>
