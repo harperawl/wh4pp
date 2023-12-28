@@ -70,6 +70,7 @@
             let params;
             let score = 0;
             let play = false;
+            let startTime;
 
             window.onload = function() {
                 params = new URLSearchParams(window.location.search);
@@ -90,6 +91,7 @@
                 }
                 document.getElementById("game").hidden = false;
                 updateTimer();
+                startTime = Date.now() / 1000;
                 timerChanging = setInterval(updateTimer, 1000);
                 document.getElementById("score").innerHTML = score;
                 play = true;
@@ -176,9 +178,9 @@
 
             function copyShareLink() {
                 if (params.get("words") != null) {
-                    navigator.clipboard.writeText("https://spikyllama.github.io/wh4pp/results.html?letters=" + btoa(gridSetup.join("")) + "&words_player1=" + params.get("words") + "&words_player2=" + btoa(listOfWords.toString()) + "&time=" + document.getElementById("time").value + "&name_player1=" + params.get("name") + "&name_player2=" + document.getElementById("name").value);
+                    navigator.clipboard.writeText("https://spikyllama.github.io/wh4pp/results.html?letters=" + btoa(gridSetup.join("")) + "&words_player1=" + params.get("words") + "&words_player2=" + btoa(listOfWords.toString()) + "&time=" + document.getElementById("time").value + "&times_player1=" + params.get("times") + "&times_player2=" + btoa(listOfTimes.toString())  + "&name_player1=" + params.get("name") + "&name_player2=" + document.getElementById("name").value);
                 } else {
-                    navigator.clipboard.writeText("https://spikyllama.github.io/wh4pp?letters=" + btoa(gridSetup.join("")) + "&words=" + btoa(listOfWords.toString()) + "&time=" + document.getElementById("time").value + "&name=" + document.getElementById("name").value);
+                    navigator.clipboard.writeText("https://spikyllama.github.io/wh4pp?letters=" + btoa(gridSetup.join("")) + "&words=" + btoa(listOfWords.toString()) + "&time=" + document.getElementById("time").value + "&times=" + btoa(listOfTimes.toString()) + "&name=" + document.getElementById("name").value);
                 }
             }
 
@@ -186,6 +188,7 @@
             let listOfLetters = [];
             let listOfBoxes = [];
             let listOfWords = [];
+            let listOfTimes = [];
             let lastSelectedCell = null;
 
             document.addEventListener('mousedown', handleMouseDown);
@@ -206,6 +209,7 @@
                         score += wordScore;
                         document.getElementById("score").innerHTML = score;
                         listOfWords.push(word);
+                        listOfTimes.push(Number(toFixed((Date.now() / 1000) - startTime, 2)));
                         document.getElementById("words").innerHTML += "<br>" + word + "&nbsp;" + wordScore;
                     }
                 }
@@ -275,6 +279,7 @@
                         score += wordScore;
                         document.getElementById("score").innerHTML = score;
                         listOfWords.push(word);
+                        listOfTimes.push(Number(toFixed((Date.now() / 1000) - startTime, 2)));
                         document.getElementById("words").innerHTML += "<br>" + word + "&nbsp;" + wordScore;
                     }
                 }
@@ -284,6 +289,11 @@
 
             function isAdjacentOrDiagonal(cell1, cell2) {
                 return Math.abs(cell1.getAttribute("data-position-x") - cell2.getAttribute("data-position-x")) <= 1 && Math.abs(cell1.getAttribute("data-position-y") - cell2.getAttribute("data-position-y")) <= 1;
+            }
+
+            function toFixed(num, fixed) {
+                var re = new RegExp('^-?\\d+(?:\.\\d{0,' + (fixed || -1) + '})?');
+                return num.toString().match(re)[0];
             }
 
             function calculateScore(word, list) {
