@@ -233,7 +233,6 @@
                 }
             }
 
-
             document.querySelectorAll('.letter').forEach(cell => {
                 cell.addEventListener('touchstart', handleTouchStart);
                 cell.addEventListener('touchmove', handleTouchMove);
@@ -256,8 +255,7 @@
                 if (isMouseDown && event.target.classList.contains('letter') && play) {
                     event.preventDefault();
                     const touchedCell = document.elementFromPoint(event.touches[0].clientX, event.touches[0].clientY);
-
-                    if (touchedCell && touchedCell.classList.contains('letter') && touchedCell !== lastSelectedCell && !listOfBoxes.includes(touchedCell)) {
+                    if (touchedCell && touchedCell.classList.contains('letter') && touchedCell !== lastSelectedCell && !listOfBoxes.includes(touchedCell) && isAdjacentOrDiagonal(lastSelectedCell, touchedCell)) {
                         touchedCell.classList.add('selected');
                         listOfBoxes.push(touchedCell);
                         listOfLetters.push(touchedCell.innerHTML);
