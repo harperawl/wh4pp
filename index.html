@@ -93,8 +93,13 @@
                 timerChanging = setInterval(updateTimer, 1000);
                 document.getElementById("score").innerHTML = score;
                 play = true;
-                document.getElementById("p1name").innerHTML = params.get("name");
-                document.getElementById("p2name").innerHTML = document.getElementById("name").value;
+                if (params.get("words")) {
+                    document.getElementById("p1name").innerHTML = params.get("name");
+                    document.getElementById("p2name").innerHTML = document.getElementById("name").value;
+                } else {
+                    document.getElementById("p1name").innerHTML = document.getElementById("name").value;
+                    document.getElementById("p2name").innerHTML = "???";
+                }
             }
 
             function loadLetters() {
@@ -255,7 +260,7 @@
                     }
                 }
             }
-            
+
             function handleTouchEnd() {
                 isMouseDown = false;
                 listOfBoxes.forEach(cell => {
