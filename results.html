@@ -1,0 +1,158 @@
+<!--  https://spikyllama.github.io/wh4pp/results.html?letters=&words_player1=VEFQLFRBRyxST08sUklQUyxSSVNQ&words_player2=VFVHLFJPT00sR1JPT00=&time=10&times_player1=MS42OCwyLjU2LDUuMDMsNi43Myw5LjI=&times_player2=NC4yLDcuODMsOS45OA==&name_player1=Player&name_player2=Player-->
+<html>
+    <head>
+        <title>Word Hunt (for Poor People)</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div id="main">
+            <div id="grid">
+                <div class="letter" data-position-x="0" data-position-y="0"></div>
+                <div class="letter" data-position-x="1" data-position-y="0"></div>
+                <div class="letter" data-position-x="2" data-position-y="0"></div>
+                <div class="letter" data-position-x="3" data-position-y="0"></div>
+                <div class="letter" data-position-x="0" data-position-y="1"></div>
+                <div class="letter" data-position-x="1" data-position-y="1"></div>
+                <div class="letter" data-position-x="2" data-position-y="1"></div>
+                <div class="letter" data-position-x="3" data-position-y="1"></div>
+                <div class="letter" data-position-x="0" data-position-y="2"></div>
+                <div class="letter" data-position-x="1" data-position-y="2"></div>
+                <div class="letter" data-position-x="2" data-position-y="2"></div>
+                <div class="letter" data-position-x="3" data-position-y="2"></div>
+                <div class="letter" data-position-x="0" data-position-y="3"></div>
+                <div class="letter" data-position-x="1" data-position-y="3"></div>
+                <div class="letter" data-position-x="2" data-position-y="3"></div>
+                <div class="letter" data-position-x="3" data-position-y="3"></div>
+            </div>
+            <div id="stats">
+                <table>
+                    <tr>
+                        <th></th>
+                        <th><b id="p1name"></b> (1)</th>
+                        <th><b id="p2name"></b> (2)</th>
+                    </tr>
+                    <tr>
+                        <td><b>Score:</b></td>
+                        <td id="p1score"></td>
+                        <td id="p2score"></td>
+                    </tr>
+                    <tr>
+                        <td><b># of words:</b></td>
+                        <td id="p1wordcount"></td>
+                        <td id="p2wordcount"></td>
+                    </tr>
+                    <tr>
+                        <td><b>Words:</b></td>
+                        <td id="p1words"></td>
+                        <td id="p2words"></td>
+                    </tr>
+                    <tr>
+                        <td><b>Words/sec:</b></td>
+                        <td id="p1wordspersec"></td>
+                        <td id="p2wordspersec"></td>
+                    </tr>
+                    <tr>
+                        <td><b>Avg. word length:</b></td>
+                        <td id="p1avgwordlength"></td>
+                        <td id="p2avgwordlength"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </body>
+    <script>
+        window.onload = function() {
+            params = new URLSearchParams(window.location.search);
+            if (params.get("letters") != null) {
+                loadResults();
+            }
+        }
+
+        function loadResults() {
+            loadLetters();
+            loadBasicInfo();
+        }
+
+        function loadLetters() {
+            lettersGiven = [...atob(params.get("letters"))];
+            const letters = document.querySelectorAll("div.letter");
+            for (let i = 0; i < 16; i++) {
+                letters[i].innerHTML = lettersGiven[i];
+            }
+        }
+
+        function loadBasicInfo() {
+            let p1name, p2name, p1score, p2score, p1wordcount, p2wordcount, p1words, p2words;
+            let p1wordsArray = atob(params.get("words_player1")).split(",");
+            let p2wordsArray = atob(params.get("words_player2")).split(",");
+
+            p1name = params.get("name_player1");
+            p2name = params.get("name_player2");
+            p1score = calculateScore(p1wordsArray, true);
+            p2score = calculateScore(p2wordsArray, true);
+            p1wordcount = p1wordsArray.length;
+            p2wordcount = p2wordsArray.length;
+            p1words = p1wordsArray.join(", ");
+            p2words = p2wordsArray.join(", ");
+            p1wordspersec = p1wordcount / params.get("time");
+            p2wordspersec = p2wordcount / params.get("time");
+            p1avgwordlength = p1wordsArray.join("").length / p1wordcount;
+            p2avgwordlength = p2wordsArray.join("").length / p1wordcount;
+
+            document.getElementById("p1name").innerHTML = p1name;
+            document.getElementById("p2name").innerHTML = p2name;
+            document.getElementById("p1score").innerHTML = p1score;
+            document.getElementById("p2score").innerHTML = p2score;
+            document.getElementById("p1wordcount").innerHTML = p1wordcount;
+            document.getElementById("p2wordcount").innerHTML = p2wordcount;
+            document.getElementById("p1words").innerHTML = p1words;
+            document.getElementById("p2words").innerHTML = p2words;
+            document.getElementById("p1wordspersec").innerHTML = p1wordspersec;
+            document.getElementById("p2wordspersec").innerHTML = p2wordspersec;
+            document.getElementById("p1avgwordlength").innerHTML = p1avgwordlength;
+            document.getElementById("p2avgwordlength").innerHTML = p2avgwordlength;
+        }
+
+        function calculateScore(word, list) {
+                if (list) {
+                    let listScore = 0;
+                    for (let i = 0; i < word.length; i++) {
+                        wordLength = word[i].length;
+                        if (wordLength == 3) {
+                            listScore += 100;
+                        } else if (wordLength == 4) {
+                            listScore += 400;
+                        } else if (wordLength == 5) {
+                            listScore += 800;
+                        } else if (wordLength == 6) {
+                            listScore += 1400;
+                        } else if (wordLength == 7) {
+                            listScore += 1800;
+                        } else if (wordLength >= 8) {
+                            listScore += 2200;
+                        } else {
+                            listScore += 0;
+                        }
+                    }
+                    return listScore;
+                } else {
+                    wordLength = word.length;
+                    if (wordLength == 3) {
+                            return 100;
+                        } else if (wordLength == 4) {
+                            return 400;
+                        } else if (wordLength == 5) {
+                            return 800;
+                        } else if (wordLength == 6) {
+                            return 1400;
+                        } else if (wordLength == 7) {
+                            return 1800;
+                        } else if (wordLength >= 8) {
+                            return 2200;
+                        } else {
+                            return 0;
+                        }
+                }
+            }
+    </script>
+</html>

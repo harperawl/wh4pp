@@ -23,6 +23,11 @@ body {
     gap: .75vw;
 }
 
+#main {
+    display: flex;
+    padding: 2vw;
+}
+
 .letter {
     display: flex;
     user-select: none;

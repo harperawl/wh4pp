@@ -178,7 +178,7 @@
 
             function copyShareLink() {
                 if (params.get("words") != null) {
-                    navigator.clipboard.writeText("https://spikyllama.github.io/wh4pp/results.html?letters=" + btoa(gridSetup.join("")) + "&words_player1=" + params.get("words") + "&words_player2=" + btoa(listOfWords.toString()) + "&time=" + document.getElementById("time").value + "&times_player1=" + params.get("times") + "&times_player2=" + btoa(listOfTimes.toString())  + "&name_player1=" + params.get("name") + "&name_player2=" + document.getElementById("name").value);
+                    navigator.clipboard.writeText("https://spikyllama.github.io/wh4pp/results.html?letters=" + params.get("letters") + "&words_player1=" + params.get("words") + "&words_player2=" + btoa(listOfWords.toString()) + "&time=" + document.getElementById("time").value + "&times_player1=" + params.get("times") + "&times_player2=" + btoa(listOfTimes.toString())  + "&name_player1=" + params.get("name") + "&name_player2=" + document.getElementById("name").value);
                 } else {
                     navigator.clipboard.writeText("https://spikyllama.github.io/wh4pp?letters=" + btoa(gridSetup.join("")) + "&words=" + btoa(listOfWords.toString()) + "&time=" + document.getElementById("time").value + "&times=" + btoa(listOfTimes.toString()) + "&name=" + document.getElementById("name").value);
                 }
