@@ -1,5 +1,6 @@
 body {
     padding: 1vw;
+    touch-action: pan-y pinch-zoom;
 }
 
 #time {
@@ -8,7 +9,7 @@ body {
 
 #game {
     display: flex;
-    padding: 1vw;
+    padding: .1vw .1vw;
 }
 
 #game > div {
@@ -41,4 +42,9 @@ body {
 table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
+}
+
+th, td {
+    word-wrap: break-word;
+    max-width: 5vw;
 }

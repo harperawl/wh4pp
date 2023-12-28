@@ -7,14 +7,16 @@
         <h1>Word Hunt (for Poor People)</h1>
         <div id="settings">
             <input id="time" type="number" value="90"> Length of time (sec)</input>
+            <input id="name" type="text" value="Player"> Player name</input>
             <br>
             <button id="start" onclick=startGame()>Start</button>
         </div>
+        <div id="info">
+            <p>Time:&nbsp;<span id="timer"></span></p>
+            <p>Score:&nbsp;<span id="score"></span></p>
+            <p>Current word:&nbsp;<span id="word"></span></p>
+        </div>
         <div id="game">
-            <div id="info">
-                <p>Time:&nbsp;<span id="timer"></span></p>
-                <p>Score:&nbsp;<span id="score"></span></p>
-            </div>
             <div id="grid">
                 <div class="letter" data-position-x="0" data-position-y="0"></div>
                 <div class="letter" data-position-x="1" data-position-y="0"></div>
@@ -38,8 +40,8 @@
                 <table>
                     <tr>
                         <th></th>
-                        <th><b>Player 1</b></th>
-                        <th><b>Player 2</b></th>
+                        <th><b id="p1name"></b> (1)</th>
+                        <th><b id="p2name"></b> (2)</th>
                     </tr>
                     <tr>
                         <td><b>Score:</b></td>
@@ -57,7 +59,7 @@
                         <td id="p2words"></td>
                     </tr>
                 </table>
-                Share link: <b id="sharelink"></b>
+                <button onclick=copyShareLink()>Copy link to share game</button>
             </div>
         </div>
         <script type="text/javascript" src="wordList.js"></script>
@@ -91,11 +93,13 @@
                 timerChanging = setInterval(updateTimer, 1000);
                 document.getElementById("score").innerHTML = score;
                 play = true;
+                document.getElementById("p1name").innerHTML = params.get("name");
+                document.getElementById("p2name").innerHTML = document.getElementById("name").value;
             }
 
             function loadLetters() {
                 words.innerHTML = "";
-                lettersGiven = atob(params.get("letters")).split(",");
+                lettersGiven = [...atob(params.get("letters"))];
                 const letters = document.querySelectorAll("div.letter");
                 for (let i = 0; i < 16; i++) {
                     letters[i].innerHTML = lettersGiven[i];
@@ -155,13 +159,20 @@
                     p2words = "???";
                 }
 
-                document.getElementById("sharelink").innerHTML = "http://spikyllama.github.io/wh4pp?letters=" + btoa(gridSetup.toString()) + "&words=" + btoa(listOfWords.toString()) + "&time=" + document.getElementById("time").value;
                 document.getElementById("p1score").innerHTML = p1score;
                 document.getElementById("p2score").innerHTML = p2score;
                 document.getElementById("p1wordcount").innerHTML = p1wordcount;
                 document.getElementById("p2wordcount").innerHTML = p2wordcount;
                 document.getElementById("p1words").innerHTML = p1words;
                 document.getElementById("p2words").innerHTML = p2words;
+            }
+
+            function copyShareLink() {
+                if (params.get("words") != null) {
+                    navigator.clipboard.writeText("https://spikyllama.github.io/wh4pp/results.html?letters=" + btoa(gridSetup.join("")) + "&words_player1=" + params.get("words") + "&words_player2=" + btoa(listOfWords.toString()) + "&time=" + document.getElementById("time").value + "&name_player1=" + params.get("name") + "&name_player2=" + document.getElementById("name").value);
+                } else {
+                    navigator.clipboard.writeText("https://spikyllama.github.io/wh4pp?letters=" + btoa(gridSetup.join("")) + "&words=" + btoa(listOfWords.toString()) + "&time=" + document.getElementById("time").value + "&name=" + document.getElementById("name").value);
+                }
             }
 
             let isMouseDown = false;
@@ -206,8 +217,62 @@
                     event.target.classList.add('selected');
                     listOfBoxes.push(event.target);
                     listOfLetters.push(event.target.innerHTML);
+                    document.getElementById("word").innerHTML = listOfLetters.join("");
                     lastSelectedCell = event.target;
                 }
+            }
+
+
+            document.querySelectorAll('.letter').forEach(cell => {
+                cell.addEventListener('touchstart', handleTouchStart);
+                cell.addEventListener('touchmove', handleTouchMove);
+                cell.addEventListener('touchend', handleTouchEnd);
+            });
+
+            function handleTouchStart(event) {
+                if (play) {
+                    isMouseDown = true;
+                    const touchedCell = event.target;
+                    touchedCell.classList.add('selected');
+                    listOfBoxes.push(touchedCell);
+                    listOfLetters.push(touchedCell.innerHTML);
+                    document.getElementById("word").innerHTML = listOfLetters.join("");
+                    lastSelectedCell = touchedCell;
+                }
+            }
+
+            function handleTouchMove(event) {
+                if (isMouseDown && event.target.classList.contains('letter') && play) {
+                    event.preventDefault();
+                    const touchedCell = document.elementFromPoint(event.touches[0].clientX, event.touches[0].clientY);
+
+                    if (touchedCell && touchedCell.classList.contains('letter') && touchedCell !== lastSelectedCell && !listOfBoxes.includes(touchedCell)) {
+                        touchedCell.classList.add('selected');
+                        listOfBoxes.push(touchedCell);
+                        listOfLetters.push(touchedCell.innerHTML);
+                        document.getElementById("word").innerHTML = listOfLetters.join("");
+                        lastSelectedCell = touchedCell;
+                    }
+                }
+            }
+            
+            function handleTouchEnd() {
+                isMouseDown = false;
+                listOfBoxes.forEach(cell => {
+                    cell.classList.remove('selected');
+                });
+                if (listOfLetters.length > 2) {
+                    word = listOfLetters.join("");
+                    if (wordList.hasOwnProperty(word.toLowerCase()) && !listOfWords.includes(word)) {
+                        wordScore = calculateScore(word, false)
+                        score += wordScore;
+                        document.getElementById("score").innerHTML = score;
+                        listOfWords.push(word);
+                        document.getElementById("words").innerHTML += "<br>" + word + "&nbsp;" + wordScore;
+                    }
+                }
+                listOfBoxes = [];
+                listOfLetters = [];
             }
 
             function isAdjacentOrDiagonal(cell1, cell2) {
