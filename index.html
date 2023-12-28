@@ -59,7 +59,7 @@
                         <td id="p2words"></td>
                     </tr>
                 </table>
-                <button onclick=copyShareLink()>Copy link to share game</button>
+                <button id="sharebutton" onclick=copyShareLink()></button>
             </div>
         </div>
         <script type="text/javascript" src="wordList.js"></script>
@@ -155,6 +155,7 @@
                     p2wordcount = listOfWords.length;
                     p1words = p1wordsArray.join(", ");
                     p2words = listOfWords.join(", ");
+                    document.getElementById("sharebutton").innerHTML = "Share final results and stats";
                 } else {
                     p1score = score;
                     p2score = "???";
@@ -162,6 +163,7 @@
                     p2wordcount = "???";
                     p1words = listOfWords.join(", ");
                     p2words = "???";
+                    document.getElementById("sharebutton").innerHTML = "Share link for second player";
                 }
 
                 document.getElementById("p1score").innerHTML = p1score;
